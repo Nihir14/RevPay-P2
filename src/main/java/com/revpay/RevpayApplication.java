@@ -9,8 +9,4 @@ public class RevpayApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(RevpayApplication.class, args);
 	}
-
-
-
-
 }
