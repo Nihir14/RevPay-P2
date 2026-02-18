@@ -9,15 +9,4 @@ public class RevpayApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(RevpayApplication.class, args);
 	}
-
-	// Rahul is ready to work on it
-	// Lakshman is ready to work on it
-	// Vijay is ready to work on it
-	// Nihir is ready to work on it
-	// Vishnu is ready to work on it
-
-
-
-
-
 }
