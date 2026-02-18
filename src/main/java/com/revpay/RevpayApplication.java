@@ -10,10 +10,11 @@ public class RevpayApplication {
 		SpringApplication.run(RevpayApplication.class, args);
 	}
 
-	// rahul patha is working on it
-	// lakshman in
-	// Vijay is working
+	// Rahul is ready to work on it
+	// Lakshman is ready to work on it
+	// Vijay is ready to work on it
 	// Nihir is ready to work on it
+
 
 
 
