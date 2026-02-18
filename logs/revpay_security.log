@@ -779,3 +779,71 @@ This generated password is for development use only. Your security configuration
 2026-02-18T14:29:01.016+05:30  INFO 20672 --- [revpay] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
 2026-02-18T14:29:01.025+05:30  INFO 20672 --- [revpay] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
 2026-02-18T14:29:01.047+05:30  INFO 20672 --- [revpay] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-02-18T17:17:27.279+05:30  INFO 14292 --- [revpay] [main] com.revpay.RegistrationIntegrationTest   : Starting RegistrationIntegrationTest using Java 22.0.2 with PID 14292 (started by namit in C:\Users\namit\Desktop\RevTraining\Project 2\revpay)
+2026-02-18T17:17:27.282+05:30  INFO 14292 --- [revpay] [main] com.revpay.RegistrationIntegrationTest   : No active profile set, falling back to 1 default profile: "default"
+2026-02-18T17:17:28.392+05:30  INFO 14292 --- [revpay] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-18T17:17:28.475+05:30  INFO 14292 --- [revpay] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 67 ms. Found 3 JPA repository interfaces.
+2026-02-18T17:17:29.434+05:30  INFO 14292 --- [revpay] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-02-18T17:17:29.528+05:30  INFO 14292 --- [revpay] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.41.Final
+2026-02-18T17:17:29.588+05:30  INFO 14292 --- [revpay] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-02-18T17:17:30.076+05:30  INFO 14292 --- [revpay] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-02-18T17:17:30.131+05:30  INFO 14292 --- [revpay] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-02-18T17:17:30.918+05:30  INFO 14292 --- [revpay] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4c13ca07
+2026-02-18T17:17:30.920+05:30  INFO 14292 --- [revpay] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-02-18T17:17:31.091+05:30  INFO 14292 --- [revpay] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.44
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-02-18T17:17:32.567+05:30  INFO 14292 --- [revpay] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-02-18T17:17:32.759+05:30  INFO 14292 --- [revpay] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-18T17:17:33.387+05:30  WARN 14292 --- [revpay] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-02-18T17:17:33.773+05:30  WARN 14292 --- [revpay] [main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: b127b46d-108a-4b2f-83a9-05c58b7942cb
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-02-18T17:17:33.784+05:30  INFO 14292 --- [revpay] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-02-18T17:17:34.579+05:30  INFO 14292 --- [revpay] [main] com.revpay.RegistrationIntegrationTest   : Started RegistrationIntegrationTest in 7.974 seconds (process running for 10.083)
+2026-02-18T17:17:35.444+05:30  INFO 14292 --- [revpay] [main] com.revpay.service.AuthService           : REGISTRATION_START | Email: test@revpay.com
+2026-02-18T17:17:35.825+05:30  INFO 14292 --- [revpay] [main] com.revpay.service.AuthService           : REGISTRATION_SUCCESS | UserID: 3 | Wallet Created
+2026-02-18T17:17:35.903+05:30  INFO 14292 --- [revpay] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-02-18T17:17:35.906+05:30  INFO 14292 --- [revpay] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-02-18T17:17:35.928+05:30  INFO 14292 --- [revpay] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-02-18T17:17:48.668+05:30  INFO 13496 --- [revpay] [main] com.revpay.AuthServiceTest               : Starting AuthServiceTest using Java 22.0.2 with PID 13496 (started by namit in C:\Users\namit\Desktop\RevTraining\Project 2\revpay)
+2026-02-18T17:17:48.670+05:30  INFO 13496 --- [revpay] [main] com.revpay.AuthServiceTest               : No active profile set, falling back to 1 default profile: "default"
+2026-02-18T17:17:49.653+05:30  INFO 13496 --- [revpay] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-18T17:17:49.768+05:30  INFO 13496 --- [revpay] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 101 ms. Found 3 JPA repository interfaces.
+2026-02-18T17:17:50.618+05:30  INFO 13496 --- [revpay] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-02-18T17:17:50.687+05:30  INFO 13496 --- [revpay] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.41.Final
+2026-02-18T17:17:50.735+05:30  INFO 13496 --- [revpay] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-02-18T17:17:51.154+05:30  INFO 13496 --- [revpay] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-02-18T17:17:51.193+05:30  INFO 13496 --- [revpay] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-02-18T17:17:51.702+05:30  INFO 13496 --- [revpay] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@59b98ad1
+2026-02-18T17:17:51.705+05:30  INFO 13496 --- [revpay] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-02-18T17:17:51.826+05:30  INFO 13496 --- [revpay] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0.44
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-02-18T17:17:52.967+05:30  INFO 13496 --- [revpay] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-02-18T17:17:53.090+05:30  INFO 13496 --- [revpay] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-18T17:17:53.677+05:30  WARN 13496 --- [revpay] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-02-18T17:17:54.058+05:30  WARN 13496 --- [revpay] [main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 5e642d0c-6c8a-463b-b0e7-fd2b6a533d42
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-02-18T17:17:54.070+05:30  INFO 13496 --- [revpay] [main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-02-18T17:17:54.728+05:30  INFO 13496 --- [revpay] [main] com.revpay.AuthServiceTest               : Started AuthServiceTest in 6.626 seconds (process running for 8.32)
+2026-02-18T17:17:55.718+05:30  INFO 13496 --- [revpay] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-02-18T17:17:55.721+05:30  INFO 13496 --- [revpay] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-02-18T17:17:55.735+05:30  INFO 13496 --- [revpay] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
