@@ -1,6 +1,6 @@
 package com.revpay;
 
-import com.revpay.dto.RegistrationRequest;
+import com.revpay.model.dto.RegistrationRequest;
 import com.revpay.model.User;
 import com.revpay.model.Wallet;
 import com.revpay.repository.UserRepository;
