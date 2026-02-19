@@ -18,7 +18,6 @@ public class InvoiceService {
     private BusinessProfileRepository businessProfileRepository;
 
     public Invoice createInvoice(Long profileId, Invoice invoice) {
-        // 1. Fetch the business using 'profileId'
         BusinessProfile business = businessProfileRepository.findById(profileId)
                 .orElseThrow(() -> new RuntimeException("Business not found"));
 
@@ -30,16 +29,15 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
-    public List<Invoice> getAllInvoicesByBusiness(Long businessId) {
-        return invoiceRepository.findByBusinessProfile_ProfileId(businessId);
+    // Consolidated the duplicate methods into one
     public List<Invoice> getAllInvoicesByBusiness(Long profileId) {
-        // ✅ CALL THE RENAMED METHOD
         return invoiceRepository.findByBusinessProfile_ProfileId(profileId);
     }
 
     public void markAsPaid(Long invoiceId) {
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new RuntimeException("Invoice not found"));
+
         invoice.setStatus(Invoice.InvoiceStatus.PAID);
         invoiceRepository.save(invoice);
     }
