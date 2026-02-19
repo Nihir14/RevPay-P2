@@ -1,7 +1,7 @@
 package com.revpay.controller;
 
-import com.revpay.model.Transaction;
-import com.revpay.model.User;
+import com.revpay.model.entity.Transaction;
+import com.revpay.model.entity.User;
 import com.revpay.repository.UserRepository;
 import com.revpay.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;

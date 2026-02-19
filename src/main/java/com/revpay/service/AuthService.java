@@ -2,7 +2,10 @@ package com.revpay.service;
 
 import com.revpay.model.dto.RegistrationRequest;
 import com.revpay.exception.UserAlreadyExistsException;
-import com.revpay.model.*;
+import com.revpay.model.entity.BusinessProfile;
+import com.revpay.model.entity.Role;
+import com.revpay.model.entity.User;
+import com.revpay.model.entity.Wallet;
 import com.revpay.repository.*;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger; // Corrected Import

@@ -1,7 +1,7 @@
 package com.revpay.service;
 
-import com.revpay.model.BusinessProfile;
-import com.revpay.model.Invoice;
+import com.revpay.model.entity.BusinessProfile;
+import com.revpay.model.entity.Invoice;
 import com.revpay.repository.BusinessProfileRepository;
 import com.revpay.repository.InvoiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;

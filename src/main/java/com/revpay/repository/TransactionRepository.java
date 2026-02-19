@@ -1,7 +1,7 @@
 package com.revpay.repository;
 
-import com.revpay.model.Transaction;
-import com.revpay.model.User;
+import com.revpay.model.entity.Transaction;
+import com.revpay.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

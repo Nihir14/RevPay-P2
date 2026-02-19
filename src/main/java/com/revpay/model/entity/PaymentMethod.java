@@ -1,4 +1,4 @@
-package com.revpay.model;
+package com.revpay.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
