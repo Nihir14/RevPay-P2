@@ -21,7 +21,7 @@ public class InvoiceService {
     }
 
     public List<Invoice> getAllInvoicesByBusiness(Long businessId) {
-        return invoiceRepository.findByBusinessProfileId(businessId);
+        return invoiceRepository.findByBusinessProfile_ProfileId(businessId);
     }
 
     public void markAsPaid(Long invoiceId) {
