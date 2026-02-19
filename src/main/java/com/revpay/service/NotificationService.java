@@ -1,7 +1,7 @@
-package com.revpay.notification.service;
+package com.revpay.service;
 
-import com.revpay.notification.entity.Notification;
-import com.revpay.notification.repository.NotificationRepository;
+import com.revpay.model.entity.Notification;
+import com.revpay.repository.NotificationRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.revpay.notification.entity;
+package com.revpay.model.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

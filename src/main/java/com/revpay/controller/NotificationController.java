@@ -1,7 +1,7 @@
-package com.revpay.notification.controller;
+package com.revpay.controller;
 
-import com.revpay.notification.entity.Notification;
-import com.revpay.notification.service.NotificationService;
+import com.revpay.model.entity.Notification;
+import com.revpay.service.NotificationService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

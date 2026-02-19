@@ -1,4 +1,4 @@
-package com.revpay.dto;
+package com.revpay.model.dto;
 
 import lombok.Data;
 

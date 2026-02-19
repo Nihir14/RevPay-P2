@@ -1,6 +1,6 @@
-package com.revpay.notification.repository;
+package com.revpay.repository;
 
-import com.revpay.notification.entity.Notification;
+import com.revpay.model.entity.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
