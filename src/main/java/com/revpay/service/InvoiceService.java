@@ -30,6 +30,8 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
+    public List<Invoice> getAllInvoicesByBusiness(Long businessId) {
+        return invoiceRepository.findByBusinessProfile_ProfileId(businessId);
     public List<Invoice> getAllInvoicesByBusiness(Long profileId) {
         // ✅ CALL THE RENAMED METHOD
         return invoiceRepository.findByBusinessProfile_ProfileId(profileId);
