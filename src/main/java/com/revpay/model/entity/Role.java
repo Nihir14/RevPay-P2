@@ -1,4 +1,4 @@
-package com.revpay.model;
+package com.revpay.model.entity;
 
 public enum Role {
     PERSONAL,

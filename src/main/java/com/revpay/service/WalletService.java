@@ -1,8 +1,11 @@
 package com.revpay.service;
 
-import com.revpay.model.*;
+import com.revpay.model.entity.PaymentMethod;
+import com.revpay.model.entity.Transaction;
+import com.revpay.model.entity.User;
+import com.revpay.model.entity.Wallet;
 import com.revpay.repository.*;
-import com.revpay.dto.TransactionRequest;
+import com.revpay.model.dto.TransactionRequest;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

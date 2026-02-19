@@ -1,6 +1,6 @@
 package com.revpay.repository;
 
-import com.revpay.model.Invoice;
+import com.revpay.model.entity.Invoice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

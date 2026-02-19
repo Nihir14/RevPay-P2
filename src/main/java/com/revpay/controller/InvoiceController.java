@@ -1,6 +1,6 @@
 package com.revpay.controller;
 
-import com.revpay.model.Invoice;
+import com.revpay.model.entity.Invoice;
 import com.revpay.service.InvoiceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
