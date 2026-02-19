@@ -9,21 +9,25 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/business")
+@CrossOrigin(origins = "*")
 public class InvoiceController {
 
     @Autowired
     private InvoiceService invoiceService;
 
-    @PostMapping("/invoices")
-    public ResponseEntity<Invoice> create(@RequestBody Invoice invoice) {
-        return ResponseEntity.ok(invoiceService.createInvoice(invoice));
+    // POST /api/business/{profileId}/invoices
+    @PostMapping("/{profileId}/invoices")
+    public ResponseEntity<Invoice> create(@PathVariable Long profileId, @RequestBody Invoice invoice) {
+        return ResponseEntity.ok(invoiceService.createInvoice(profileId, invoice));
     }
 
-    @GetMapping("/{businessId}/invoices")
-    public List<Invoice> getInvoices(@PathVariable Long businessId) {
-        return invoiceService.getAllInvoicesByBusiness(businessId);
+    // GET /api/business/{profileId}/invoices
+    @GetMapping("/{profileId}/invoices")
+    public List<Invoice> getInvoices(@PathVariable Long profileId) {
+        return invoiceService.getAllInvoicesByBusiness(profileId);
     }
 
+    // PATCH /api/business/invoices/{id}/pay
     @PatchMapping("/invoices/{id}/pay")
     public ResponseEntity<String> markPaid(@PathVariable Long id) {
         invoiceService.markAsPaid(id);
