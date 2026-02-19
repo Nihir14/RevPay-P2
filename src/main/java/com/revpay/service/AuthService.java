@@ -1,6 +1,6 @@
 package com.revpay.service;
 
-import com.revpay.dto.RegistrationRequest;
+import com.revpay.model.dto.RegistrationRequest;
 import com.revpay.exception.UserAlreadyExistsException;
 import com.revpay.model.*;
 import com.revpay.repository.*;
