@@ -33,8 +33,6 @@ build/
 ### VS Code ###
 .vscode/
 # Logs
-logs/
-*.log
 *.gz
 
 # Local Configuration Secrets
