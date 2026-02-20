@@ -15,14 +15,22 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    // --- ADDED FOR LAKSHMAN'S WALLET MODULE ---
+    // --- UPDATED FOR LAKSHMAN'S WALLET MODULE ---
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleWalletRuntime(RuntimeException ex) {
-        // This catches your "Insufficient balance" and "Invalid PIN" errors
+        // Default code
         String code = "WALLET_ERR";
-        if (ex.getMessage().contains("PIN")) code = "AUTH_ERR_02";
-        if (ex.getMessage().contains("balance")) code = "WALLET_ERR_01";
+
+        // Specific checks for Wallet Logic
+        if (ex.getMessage().contains("PIN")) {
+            code = "AUTH_ERR_02";
+        } else if (ex.getMessage().contains("balance")) {
+            code = "WALLET_ERR_01";
+        } else if (ex.getMessage().contains("limit")) {
+            // New check for the Daily Limit feature
+            code = "LIMIT_ERR_01";
+        }
 
         ErrorResponse error = new ErrorResponse(code, ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
