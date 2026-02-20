@@ -144,7 +144,7 @@ public class LoanService {
         }
 
         LoanInstallment nextInstallment =
-                installmentRepository.findByLoan_LoanId(loan.getLoanId())
+                installmentRepository.findByLoan_User_UserId(loan.getLoanId())
                         .stream()
                         .filter(i -> i.getStatus() == InstallmentStatus.PENDING
                                 || i.getStatus() == InstallmentStatus.OVERDUE)
@@ -182,11 +182,11 @@ public class LoanService {
     }
 
     public List<Loan> getUserLoans(Long userId){
-        return loanRepository.findByUser_Id(userId);
+        return loanRepository.findByUser_UserId(userId);
     }
 
     public BigDecimal totalOutstanding(Long userId){
-        return loanRepository.findByUser_Id(userId)
+        return loanRepository.findByUser_UserId(userId)
                 .stream()
                 .map(Loan::getRemainingAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -205,7 +205,7 @@ public class LoanService {
             throw new RuntimeException("Unauthorized");
         }
 
-        return installmentRepository.findByLoan_LoanId(loanId);
+        return installmentRepository.findByLoan_User_UserId(loanId);
     }
 
     public List<LoanInstallment> getOverdueEmis(Long userId){
