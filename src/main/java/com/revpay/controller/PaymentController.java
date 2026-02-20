@@ -13,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/cards")
+@CrossOrigin(origins = "*")
 public class PaymentController {
 
     @Autowired private WalletService walletService;
@@ -20,7 +21,6 @@ public class PaymentController {
 
     private User getAuthenticatedUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        // Using .orElseThrow() fixes your yellow "Optional.get()" warning
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
     }
@@ -38,6 +38,6 @@ public class PaymentController {
     @PatchMapping("/{cardId}/default")
     public ResponseEntity<String> makeDefault(@PathVariable Long cardId) {
         walletService.setDefaultCard(getAuthenticatedUser().getUserId(), cardId);
-        return ResponseEntity.ok("Default card updated");
+        return ResponseEntity.ok("Default card updated successfully");
     }
 }
