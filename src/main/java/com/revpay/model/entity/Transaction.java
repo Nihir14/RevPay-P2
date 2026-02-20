@@ -18,11 +18,11 @@ public class Transaction {
     private Long transactionId;
 
     @ManyToOne
-    @JoinColumn(name = "sender_id", nullable = true) // Null for "Add Funds"
+    @JoinColumn(name = "sender_id", nullable = true)
     private User sender;
 
     @ManyToOne
-    @JoinColumn(name = "receiver_id", nullable = true) // Null for "Withdraw"
+    @JoinColumn(name = "receiver_id", nullable = true)
     private User receiver;
 
     @Column(nullable = false, precision = 15, scale = 2)
@@ -38,6 +38,9 @@ public class Transaction {
 
     @CreationTimestamp
     private LocalDateTime timestamp;
+
+    // --- ADDED THIS FOR AUDIT TRACKING ---
+    private String transactionRef;
 
     public enum TransactionType {
         SEND, REQUEST, ADD_FUNDS, WITHDRAW, INVOICE_PAYMENT

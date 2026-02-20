@@ -1,6 +1,8 @@
 package com.revpay.controller;
 
+import com.revpay.model.dto.InvoicePaymentRequest;
 import com.revpay.model.dto.TransactionRequest;
+import com.revpay.model.dto.WalletAnalyticsDTO; // New DTO Import
 import com.revpay.model.entity.Transaction;
 import com.revpay.model.entity.User;
 import com.revpay.repository.UserRepository;
@@ -15,15 +17,23 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/wallet")
+@CrossOrigin(origins = "*")
 public class WalletController {
 
     @Autowired private WalletService walletService;
     @Autowired private UserRepository userRepository;
 
-    // Helper to get logged-in user email from Nihir's Security Context
+    // Helper to get logged-in user from Security Context
     private User getAuthenticatedUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByEmail(email).get();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+    }
+
+    // --- FEATURE 4: WALLET ANALYTICS ---
+    @GetMapping("/analytics")
+    public ResponseEntity<WalletAnalyticsDTO> getAnalytics() {
+        return ResponseEntity.ok(walletService.getSpendingAnalytics(getAuthenticatedUser()));
     }
 
     @GetMapping("/balance")
@@ -37,14 +47,26 @@ public class WalletController {
         return ResponseEntity.ok(walletService.sendMoney(sender.getUserId(), request));
     }
 
+    // --- FEATURE 3: INVOICE PAYMENT ENDPOINT ---
+    @PostMapping("/pay-invoice")
+    public ResponseEntity<Transaction> payInvoice(@RequestBody InvoicePaymentRequest request) {
+        User user = getAuthenticatedUser();
+        return ResponseEntity.ok(walletService.payInvoice(
+                user.getUserId(),
+                request.getInvoiceId(),
+                request.getTransactionPin()
+        ));
+    }
+
     @GetMapping("/transactions")
     public ResponseEntity<List<Transaction>> getHistory(@RequestParam(required = false) String type) {
-        // We pass the whole User object and the type string (which can be null)
         return ResponseEntity.ok(walletService.getMyHistory(getAuthenticatedUser(), type));
     }
 
     @PostMapping("/add-funds")
-    public ResponseEntity<Transaction> addFunds(@RequestParam BigDecimal amount, @RequestParam(required = false) String description) {
+    public ResponseEntity<Transaction> addFunds(
+            @RequestParam BigDecimal amount,
+            @RequestParam(required = false) String description) {
         return ResponseEntity.ok(walletService.addFunds(getAuthenticatedUser().getUserId(), amount, description));
     }
 
