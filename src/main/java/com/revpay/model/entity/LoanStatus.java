@@ -1,4 +1,10 @@
 package com.revpay.model.entity;
 
-public class LoanStatus {
+public enum LoanStatus {
+    APPLIED,
+    UNDER_REVIEW,
+    APPROVED,
+    REJECTED,
+    ACTIVE,
+    CLOSED
 }
