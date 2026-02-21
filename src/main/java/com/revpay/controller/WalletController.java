@@ -1,11 +1,7 @@
 package com.revpay.controller;
 
-import com.revpay.model.dto.InvoicePaymentRequest;
-import com.revpay.model.dto.TransactionRequest;
-import com.revpay.model.dto.WalletAnalyticsDTO;
-import com.revpay.model.entity.PaymentMethod;
-import com.revpay.model.entity.Transaction;
-import com.revpay.model.entity.User;
+import com.revpay.model.dto.*;
+import com.revpay.model.entity.*;
 import com.revpay.repository.UserRepository;
 import com.revpay.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/wallet")
-@CrossOrigin(origins = "*") // Crucial for Angular connection
+
 public class WalletController {
 
     @Autowired private WalletService walletService;
@@ -39,19 +36,20 @@ public class WalletController {
 
     @PostMapping("/send")
     public ResponseEntity<Transaction> transfer(@RequestBody TransactionRequest request) {
-        User sender = getAuthenticatedUser();
-        return ResponseEntity.ok(walletService.sendMoney(sender.getUserId(), request));
+        return ResponseEntity.ok(walletService.sendMoney(getAuthenticatedUser().getUserId(), request));
     }
 
+    // FIXED: Now accepts JSON body instead of Params for better Postman testing
     @PostMapping("/add-funds")
-    public ResponseEntity<Transaction> addFunds(
-            @RequestParam BigDecimal amount,
-            @RequestParam(required = false, defaultValue = "Wallet Deposit") String description) {
+    public ResponseEntity<Transaction> addFunds(@RequestBody Map<String, Object> request) {
+        BigDecimal amount = new BigDecimal(request.get("amount").toString());
+        String description = request.getOrDefault("description", "Wallet Deposit").toString();
         return ResponseEntity.ok(walletService.addFunds(getAuthenticatedUser().getUserId(), amount, description));
     }
 
     @PostMapping("/withdraw")
-    public ResponseEntity<Transaction> withdraw(@RequestParam BigDecimal amount) {
+    public ResponseEntity<Transaction> withdraw(@RequestBody Map<String, Object> request) {
+        BigDecimal amount = new BigDecimal(request.get("amount").toString());
         return ResponseEntity.ok(walletService.withdrawFunds(getAuthenticatedUser().getUserId(), amount));
     }
 
@@ -59,22 +57,23 @@ public class WalletController {
 
     @PostMapping("/pay-invoice")
     public ResponseEntity<Transaction> payInvoice(@RequestBody InvoicePaymentRequest request) {
-        User user = getAuthenticatedUser();
         return ResponseEntity.ok(walletService.payInvoice(
-                user.getUserId(),
+                getAuthenticatedUser().getUserId(),
                 request.getInvoiceId(),
                 request.getTransactionPin()
         ));
     }
 
     @PostMapping("/request")
-    public ResponseEntity<Transaction> requestMoney(@RequestParam String targetEmail, @RequestParam BigDecimal amount) {
+    public ResponseEntity<Transaction> requestMoney(@RequestBody Map<String, Object> request) {
+        String targetEmail = request.get("targetEmail").toString();
+        BigDecimal amount = new BigDecimal(request.get("amount").toString());
         return ResponseEntity.ok(walletService.requestMoney(getAuthenticatedUser().getUserId(), targetEmail, amount));
     }
 
     @PostMapping("/request/accept/{txnId}")
-    public ResponseEntity<Transaction> acceptRequest(@PathVariable Long txnId, @RequestParam String pin) {
-        return ResponseEntity.ok(walletService.acceptRequest(txnId, pin));
+    public ResponseEntity<Transaction> acceptRequest(@PathVariable Long txnId, @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(walletService.acceptRequest(txnId, body.get("pin")));
     }
 
     // --- 3. HISTORY & ANALYTICS ---
