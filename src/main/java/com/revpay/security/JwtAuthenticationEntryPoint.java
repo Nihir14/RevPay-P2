@@ -14,16 +14,14 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationEntryPoint.class);
+    private static final Logger slf4jLogger = LoggerFactory.getLogger(JwtAuthenticationEntryPoint.class);
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
-        
-        // Log the unauthorized access attempt
-        logger.error("UNAUTHORIZED_ACCESS | Path: {} | Error: {}", request.getRequestURI(), authException.getMessage());
 
-        // Set the response to 401 Unauthorized and return a JSON error
+        slf4jLogger.error("UNAUTHORIZED_ACCESS | Path: {} | Error: {}", request.getRequestURI(), authException.getMessage());
+
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().write("{ \"error\": \"Unauthorized\", \"message\": \"" + authException.getMessage() + "\" }");
