@@ -174,12 +174,10 @@ public class LoanService {
     }
 
     public List<Loan> getUserLoans(Long userId){
-        // ✅ FIXED: Using corrected repository method
         return loanRepository.findByUser_UserId(userId);
     }
 
     public BigDecimal totalOutstanding(Long userId){
-        // ✅ FIXED: Using corrected repository method
         return loanRepository.findByUser_UserId(userId)
                 .stream()
                 .map(Loan::getRemainingAmount)

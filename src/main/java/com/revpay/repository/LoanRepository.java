@@ -9,6 +9,5 @@ import java.util.List;
 @Repository
 public interface LoanRepository extends JpaRepository<Loan, Long> {
 
-    // ✅ FIXED: Changed 'Id' to 'UserId' to exactly match the User entity's primary key
     List<Loan> findByUser_UserId(Long userId);
 }
