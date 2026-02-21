@@ -3,6 +3,7 @@ package com.revpay;
 import com.revpay.model.dto.TransactionRequest;
 import com.revpay.model.entity.*;
 import com.revpay.repository.*;
+import com.revpay.service.NotificationService;
 import com.revpay.service.WalletService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ public class WalletServiceTest {
     @Mock private TransactionRepository transRepo;
     @Mock private UserRepository userRepo;
     @Mock private PasswordEncoder encoder;
+    @Mock private NotificationService notificationService; // Added to prevent NPEs during notifications
 
     @InjectMocks
     private WalletService walletService;
@@ -39,6 +41,7 @@ public class WalletServiceTest {
         sender.setUserId(1L);
         sender.setEmail("sender@revpay.com");
         sender.setTransactionPinHash("hashed_1234");
+        sender.setFullName("Sender Name"); // Added to prevent NPE in notification text
 
         senderWallet = new Wallet();
         senderWallet.setBalance(new BigDecimal("1000.00"));
@@ -51,6 +54,7 @@ public class WalletServiceTest {
         User receiver = new User();
         receiver.setUserId(2L);
         receiver.setEmail("receiver@mail.com");
+        receiver.setFullName("Receiver Name"); // Added for notification
 
         Wallet receiverWallet = new Wallet();
         receiverWallet.setBalance(new BigDecimal("50.00"));
@@ -59,25 +63,32 @@ public class WalletServiceTest {
         when(userRepo.findById(1L)).thenReturn(Optional.of(sender));
         when(userRepo.findByEmail("receiver@mail.com")).thenReturn(Optional.of(receiver));
         when(encoder.matches("1234", sender.getTransactionPinHash())).thenReturn(true);
-        when(walletRepo.findById(1L)).thenReturn(Optional.of(senderWallet));
-        when(walletRepo.findById(2L)).thenReturn(Optional.of(receiverWallet));
+
+        // Updated mock method name to perfectly match findByUserUserId
+        lenient().when(walletRepo.findById(1L)).thenReturn(Optional.of(senderWallet));
+        lenient().when(walletRepo.findById(2L)).thenReturn(Optional.of(receiverWallet));
+        lenient().when(walletRepo.findByUserUserId(1L)).thenReturn(Optional.of(senderWallet));
+        lenient().when(walletRepo.findByUserUserId(2L)).thenReturn(Optional.of(receiverWallet));
+
         when(transRepo.findBySenderOrReceiverOrderByTimestampDesc(any(), any())).thenReturn(new ArrayList<>());
 
-        walletService.sendMoney(1L, req);
+        when(transRepo.save(any(Transaction.class))).thenAnswer(invocation -> invocation.getArguments()[0]);
+
+        Transaction result = walletService.sendMoney(1L, req);
 
         assertEquals(new BigDecimal("800.00"), senderWallet.getBalance());
         assertEquals(new BigDecimal("250.00"), receiverWallet.getBalance());
+        assertNotNull(result);
         verify(walletRepo, times(2)).save(any(Wallet.class));
+        verify(notificationService, times(2)).createNotification(anyLong(), anyString(), anyString()); // Verify notifications sent
     }
 
     @Test
     void testSendMoney_WrongPin_ShouldFail() {
         TransactionRequest req = new TransactionRequest("r@mail.com", new BigDecimal("100.00"), "test", "wrong_pin");
 
-        // Fixed: Mock userRepo findByEmail so it doesn't fail with "Receiver not found" first
         when(userRepo.findById(1L)).thenReturn(Optional.of(sender));
         when(userRepo.findByEmail("r@mail.com")).thenReturn(Optional.of(new User()));
-
         when(encoder.matches("wrong_pin", sender.getTransactionPinHash())).thenReturn(false);
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> walletService.sendMoney(1L, req));
@@ -93,9 +104,13 @@ public class WalletServiceTest {
         when(userRepo.findById(1L)).thenReturn(Optional.of(sender));
         when(userRepo.findByEmail("r@mail.com")).thenReturn(Optional.of(receiver));
         when(encoder.matches("1234", sender.getTransactionPinHash())).thenReturn(true);
-        when(walletRepo.findById(1L)).thenReturn(Optional.of(senderWallet));
-        // Fixed: Mock receiver wallet existence
-        when(walletRepo.findById(2L)).thenReturn(Optional.of(new Wallet()));
+
+        // Updated mock method name to perfectly match findByUserUserId
+        lenient().when(walletRepo.findById(1L)).thenReturn(Optional.of(senderWallet));
+        lenient().when(walletRepo.findById(2L)).thenReturn(Optional.of(new Wallet()));
+        lenient().when(walletRepo.findByUserUserId(1L)).thenReturn(Optional.of(senderWallet));
+        lenient().when(walletRepo.findByUserUserId(2L)).thenReturn(Optional.of(new Wallet()));
+
         when(transRepo.findBySenderOrReceiverOrderByTimestampDesc(any(), any())).thenReturn(new ArrayList<>());
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> walletService.sendMoney(1L, req));
@@ -107,7 +122,6 @@ public class WalletServiceTest {
         TransactionRequest req = new TransactionRequest("r@mail.com", new BigDecimal("50001.00"), "OverLimit", "1234");
 
         when(userRepo.findById(1L)).thenReturn(Optional.of(sender));
-        // Fixed: Added findByEmail mock to pass the receiver check
         when(userRepo.findByEmail("r@mail.com")).thenReturn(Optional.of(new User()));
         when(encoder.matches(anyString(), anyString())).thenReturn(true);
         when(transRepo.findBySenderOrReceiverOrderByTimestampDesc(any(), any())).thenReturn(new ArrayList<>());
@@ -118,12 +132,15 @@ public class WalletServiceTest {
 
     @Test
     void testTransactionReference_Format() {
-        when(walletRepo.findById(1L)).thenReturn(Optional.of(senderWallet));
+        // Updated mock method name to perfectly match findByUserUserId
+        lenient().when(walletRepo.findById(1L)).thenReturn(Optional.of(senderWallet));
+        lenient().when(walletRepo.findByUserUserId(1L)).thenReturn(Optional.of(senderWallet));
         when(transRepo.save(any())).thenAnswer(invocation -> invocation.getArguments()[0]);
 
         Transaction result = walletService.addFunds(1L, new BigDecimal("100.00"), "Bonus");
 
         assertNotNull(result.getTransactionRef());
         assertTrue(result.getTransactionRef().startsWith("TXN-"), "Ref should start with TXN-");
+        verify(notificationService, times(1)).createNotification(anyLong(), anyString(), anyString()); // Verify notification sent
     }
 }
