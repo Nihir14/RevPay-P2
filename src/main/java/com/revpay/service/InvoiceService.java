@@ -19,6 +19,14 @@ public class InvoiceService {
     @Autowired
     private BusinessProfileRepository businessProfileRepository;
 
+    /**
+     * Admin-only method to fetch every invoice in the system.
+     */
+    public List<Invoice> getAllInvoices() {
+        log.info("Admin request: Fetching all invoices across the entire platform");
+        return invoiceRepository.findAll();
+    }
+
     public Invoice createInvoice(Long profileId, Invoice invoice) {
         log.info("Attempting to create invoice for business profile ID: {}", profileId);
 
