@@ -29,6 +29,7 @@ public class WalletService {
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private PaymentMethodRepository paymentMethodRepository;
     @Autowired private InvoiceRepository invoiceRepository;
+    @Autowired private NotificationService notificationService; // LINKED: Notification Integration
 
     // --- 1. HELPERS & SECURITY ---
 
@@ -89,6 +90,10 @@ public class WalletService {
         request.setTransactionRef(generateRef());
 
         logger.info("REQUEST | CREATED | From: {} | To: {}", requester.getEmail(), targetEmail);
+
+        notificationService.createNotification(target.getUserId(),
+                "New Money Request: " + requester.getFullName() + " has requested ₹" + amount, "REQUEST");
+
         return transactionRepository.save(request);
     }
 
@@ -143,6 +148,11 @@ public class WalletService {
         tx.setTransactionRef(generateRef());
 
         logger.info("TRANSACTION | SUCCESS | From: {} | To: {} | Ref: {}", sender.getEmail(), receiver.getEmail(), tx.getTransactionRef());
+
+        // NOTIFICATIONS
+        notificationService.createNotification(senderId, "Success: ₹" + request.getAmount() + " sent to " + receiver.getFullName(), "TRANSFER");
+        notificationService.createNotification(receiver.getUserId(), "Received: ₹" + request.getAmount() + " from " + sender.getFullName(), "TRANSFER");
+
         return transactionRepository.save(tx);
     }
 
@@ -160,6 +170,9 @@ public class WalletService {
         tx.setTransactionRef(generateRef());
 
         logger.info("WALLET_UPDATE | DEPOSIT | User: {} | Amount: {}", wallet.getUser().getEmail(), amount);
+
+        notificationService.createNotification(userId, "Wallet Credited: ₹" + amount + " added via " + description, "WALLET");
+
         return transactionRepository.save(tx);
     }
 
@@ -179,6 +192,9 @@ public class WalletService {
         tx.setTransactionRef(generateRef());
 
         logger.info("WALLET_UPDATE | WITHDRAWAL | User: {} | Amount: {}", wallet.getUser().getEmail(), amount);
+
+        notificationService.createNotification(userId, "Wallet Debited: ₹" + amount + " withdrawn successfully.", "WALLET");
+
         return transactionRepository.save(tx);
     }
 
@@ -205,6 +221,10 @@ public class WalletService {
         tx.setStatus(Transaction.TransactionStatus.COMPLETED);
         tx.setTransactionRef(generateRef());
 
+        // NOTIFICATIONS
+        notificationService.createNotification(userId, "Payment Successful: Invoice for " + invoice.getBusinessProfile().getBusinessName() + " paid.", "INVOICE");
+        notificationService.createNotification(invoice.getBusinessProfile().getUser().getUserId(), "Payment Received: Invoice #" + invoiceId + " has been paid.", "INVOICE");
+
         return transactionRepository.save(tx);
     }
 
@@ -214,6 +234,9 @@ public class WalletService {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         card.setUser(user);
         logger.info("CARD_SERVICE | ADDED | User: {}", user.getEmail());
+
+        notificationService.createNotification(userId, "Card Linked: Your card ending in " + card.getCardNumber().substring(card.getCardNumber().length() - 4) + " has been added.", "SECURITY");
+
         return paymentMethodRepository.save(card);
     }
 
