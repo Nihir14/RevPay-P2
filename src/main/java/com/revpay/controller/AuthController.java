@@ -1,6 +1,6 @@
 package com.revpay.controller;
 
-import com.revpay.dto.JwtResponse;
+import com.revpay.model.dto.JwtResponse;
 import com.revpay.model.dto.LoginRequest;
 import com.revpay.model.dto.SignupRequest;
 import com.revpay.model.entity.Role;
