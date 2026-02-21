@@ -29,6 +29,7 @@ public class WalletService {
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private PaymentMethodRepository paymentMethodRepository;
     @Autowired private InvoiceRepository invoiceRepository;
+    @Autowired private NotificationService notificationService;
 
     // --- 1. HELPERS & SECURITY ---
 
@@ -81,7 +82,7 @@ public class WalletService {
         User target = userRepository.findByEmail(targetEmail).orElseThrow(() -> new RuntimeException("Target user not found"));
 
         Transaction request = new Transaction();
-        request.setSender(target); // Person who owes the money
+        request.setSender(target);
         request.setReceiver(requester);
         request.setAmount(amount);
         request.setType(Transaction.TransactionType.REQUEST);
@@ -89,25 +90,27 @@ public class WalletService {
         request.setTransactionRef(generateRef());
 
         logger.info("REQUEST | CREATED | From: {} | To: {}", requester.getEmail(), targetEmail);
+        notificationService.createNotification(target.getUserId(),
+                "New Money Request: " + requester.getFullName() + " has requested ₹" + amount, "REQUEST");
+
         return transactionRepository.save(request);
     }
 
     @Transactional
     public Transaction acceptRequest(Long transactionId, String pin) {
         Transaction request = transactionRepository.findById(transactionId).orElseThrow(() -> new RuntimeException("Request not found"));
-
-        // Use sendMoney logic to fulfill the request
         TransactionRequest paymentReq = new TransactionRequest(request.getReceiver().getEmail(), request.getAmount(), "Payment for Request", pin);
         sendMoney(request.getSender().getUserId(), paymentReq);
-
         request.setStatus(Transaction.TransactionStatus.COMPLETED);
         return transactionRepository.save(request);
     }
 
-    // --- 4. CORE WALLET OPERATIONS ---
+    // --- 4. CORE WALLET OPERATIONS (MODIFIED FOR ACCURACY) ---
 
     public BigDecimal getBalance(Long userId) {
-        return walletRepository.findById(userId).map(Wallet::getBalance).orElseThrow(() -> new RuntimeException("Wallet not found"));
+        return walletRepository.findByUserUserId(userId)
+                .map(Wallet::getBalance)
+                .orElseThrow(() -> new RuntimeException("Wallet not found for user ID: " + userId));
     }
 
     @Transactional
@@ -121,8 +124,8 @@ public class WalletService {
 
         checkDailyLimit(sender, request.getAmount());
 
-        Wallet senderWallet = walletRepository.findById(senderId).orElseThrow(() -> new RuntimeException("Sender wallet not found"));
-        Wallet receiverWallet = walletRepository.findById(receiver.getUserId()).orElseThrow(() -> new RuntimeException("Receiver wallet not found"));
+        Wallet senderWallet = walletRepository.findByUserUserId(senderId).orElseThrow(() -> new RuntimeException("Sender wallet not found"));
+        Wallet receiverWallet = walletRepository.findByUserUserId(receiver.getUserId()).orElseThrow(() -> new RuntimeException("Receiver wallet not found"));
 
         if (senderWallet.getBalance().compareTo(request.getAmount()) < 0) {
             throw new RuntimeException("Insufficient balance!");
@@ -142,13 +145,15 @@ public class WalletService {
         tx.setStatus(Transaction.TransactionStatus.COMPLETED);
         tx.setTransactionRef(generateRef());
 
-        logger.info("TRANSACTION | SUCCESS | From: {} | To: {} | Ref: {}", sender.getEmail(), receiver.getEmail(), tx.getTransactionRef());
+        notificationService.createNotification(senderId, "Success: ₹" + request.getAmount() + " sent to " + receiver.getFullName(), "TRANSFER");
+        notificationService.createNotification(receiver.getUserId(), "Received: ₹" + request.getAmount() + " from " + sender.getFullName(), "TRANSFER");
+
         return transactionRepository.save(tx);
     }
 
     @Transactional
     public Transaction addFunds(Long userId, BigDecimal amount, String description) {
-        Wallet wallet = walletRepository.findById(userId).orElseThrow(() -> new RuntimeException("Wallet not found"));
+        Wallet wallet = walletRepository.findByUserUserId(userId).orElseThrow(() -> new RuntimeException("Wallet not found"));
         wallet.setBalance(wallet.getBalance().add(amount));
         walletRepository.save(wallet);
 
@@ -159,13 +164,13 @@ public class WalletService {
         tx.setStatus(Transaction.TransactionStatus.COMPLETED);
         tx.setTransactionRef(generateRef());
 
-        logger.info("WALLET_UPDATE | DEPOSIT | User: {} | Amount: {}", wallet.getUser().getEmail(), amount);
+        notificationService.createNotification(userId, "Wallet Credited: ₹" + amount + " added via " + description, "WALLET");
         return transactionRepository.save(tx);
     }
 
     @Transactional
     public Transaction withdrawFunds(Long userId, BigDecimal amount) {
-        Wallet wallet = walletRepository.findById(userId).orElseThrow(() -> new RuntimeException("Wallet not found"));
+        Wallet wallet = walletRepository.findByUserUserId(userId).orElseThrow(() -> new RuntimeException("Wallet not found"));
         if (wallet.getBalance().compareTo(amount) < 0) throw new RuntimeException("Insufficient balance");
 
         wallet.setBalance(wallet.getBalance().subtract(amount));
@@ -178,7 +183,7 @@ public class WalletService {
         tx.setStatus(Transaction.TransactionStatus.COMPLETED);
         tx.setTransactionRef(generateRef());
 
-        logger.info("WALLET_UPDATE | WITHDRAWAL | User: {} | Amount: {}", wallet.getUser().getEmail(), amount);
+        notificationService.createNotification(userId, "Wallet Debited: ₹" + amount + " withdrawn successfully.", "WALLET");
         return transactionRepository.save(tx);
     }
 
@@ -188,7 +193,7 @@ public class WalletService {
         if (!passwordEncoder.matches(pin, user.getTransactionPinHash())) throw new RuntimeException("Invalid PIN!");
 
         Invoice invoice = invoiceRepository.findById(invoiceId).orElseThrow(() -> new RuntimeException("Invoice not found"));
-        Wallet wallet = walletRepository.findById(userId).orElseThrow(() -> new RuntimeException("Wallet not found"));
+        Wallet wallet = walletRepository.findByUserUserId(userId).orElseThrow(() -> new RuntimeException("Wallet not found"));
 
         if (wallet.getBalance().compareTo(invoice.getTotalAmount()) < 0) throw new RuntimeException("Insufficient balance!");
 
@@ -205,16 +210,37 @@ public class WalletService {
         tx.setStatus(Transaction.TransactionStatus.COMPLETED);
         tx.setTransactionRef(generateRef());
 
+        notificationService.createNotification(userId, "Payment Successful: Invoice for " + invoice.getBusinessProfile().getBusinessName() + " paid.", "INVOICE");
         return transactionRepository.save(tx);
     }
 
-    // --- 5. CARD MANAGEMENT ---
+    // --- 5. CARD MANAGEMENT (MODIFIED) ---
 
     public PaymentMethod addCard(Long userId, PaymentMethod card) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Simple check to prevent adding the same card twice
+        boolean exists = paymentMethodRepository.findByUser(user).stream()
+                .anyMatch(c -> c.getCardNumber().equals(card.getCardNumber()));
+        if (exists) throw new RuntimeException("This card is already linked to your account.");
+
         card.setUser(user);
-        logger.info("CARD_SERVICE | ADDED | User: {}", user.getEmail());
+        notificationService.createNotification(userId, "Card Linked successfully.", "SECURITY");
         return paymentMethodRepository.save(card);
+    }
+
+    @Transactional
+    public void deleteCard(Long userId, Long cardId) {
+        PaymentMethod card = paymentMethodRepository.findById(cardId)
+                .orElseThrow(() -> new RuntimeException("Card not found"));
+
+        // Ownership check
+        if (!card.getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("You are not authorized to delete this card.");
+        }
+
+        paymentMethodRepository.delete(card);
+        notificationService.createNotification(userId, "Payment method removed successfully.", "SECURITY");
     }
 
     public List<PaymentMethod> getCards(Long userId) {
@@ -228,7 +254,6 @@ public class WalletService {
         List<PaymentMethod> cards = paymentMethodRepository.findByUser(user);
         cards.forEach(c -> c.setDefault(c.getId().equals(cardId)));
         paymentMethodRepository.saveAll(cards);
-        logger.info("CARD_SERVICE | DEFAULT_SET | User: {} | CardID: {}", user.getEmail(), cardId);
     }
 
     // --- 6. ANALYTICS ---
