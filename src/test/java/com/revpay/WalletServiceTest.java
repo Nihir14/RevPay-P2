@@ -14,7 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.util.Optional;
-
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -35,7 +35,6 @@ public class WalletServiceTest {
 
     @BeforeEach
     void setup() {
-        // Common setup for all tests
         sender = new User();
         sender.setUserId(1L);
         sender.setEmail("sender@revpay.com");
@@ -46,20 +45,23 @@ public class WalletServiceTest {
         senderWallet.setUser(sender);
     }
 
-    // --- 1. SUCCESS CASE: SEND MONEY ---
     @Test
     void testSendMoney_Success() {
         TransactionRequest req = new TransactionRequest("receiver@mail.com", new BigDecimal("200.00"), "Lunch", "1234");
         User receiver = new User();
         receiver.setUserId(2L);
+        receiver.setEmail("receiver@mail.com");
+
         Wallet receiverWallet = new Wallet();
         receiverWallet.setBalance(new BigDecimal("50.00"));
+        receiverWallet.setUser(receiver);
 
         when(userRepo.findById(1L)).thenReturn(Optional.of(sender));
         when(userRepo.findByEmail("receiver@mail.com")).thenReturn(Optional.of(receiver));
         when(encoder.matches("1234", sender.getTransactionPinHash())).thenReturn(true);
         when(walletRepo.findById(1L)).thenReturn(Optional.of(senderWallet));
         when(walletRepo.findById(2L)).thenReturn(Optional.of(receiverWallet));
+        when(transRepo.findBySenderOrReceiverOrderByTimestampDesc(any(), any())).thenReturn(new ArrayList<>());
 
         walletService.sendMoney(1L, req);
 
@@ -68,47 +70,52 @@ public class WalletServiceTest {
         verify(walletRepo, times(2)).save(any(Wallet.class));
     }
 
-    // --- 2. SECURITY CASE: WRONG PIN ---
     @Test
     void testSendMoney_WrongPin_ShouldFail() {
         TransactionRequest req = new TransactionRequest("r@mail.com", new BigDecimal("100.00"), "test", "wrong_pin");
 
+        // Fixed: Mock userRepo findByEmail so it doesn't fail with "Receiver not found" first
         when(userRepo.findById(1L)).thenReturn(Optional.of(sender));
+        when(userRepo.findByEmail("r@mail.com")).thenReturn(Optional.of(new User()));
+
         when(encoder.matches("wrong_pin", sender.getTransactionPinHash())).thenReturn(false);
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> walletService.sendMoney(1L, req));
         assertEquals("Invalid Transaction PIN!", ex.getMessage());
     }
 
-    // --- 3. LOGIC CASE: INSUFFICIENT BALANCE ---
     @Test
     void testSendMoney_LowBalance_ShouldFail() {
-        // Trying to send 5000 when only 1000 is available
         TransactionRequest req = new TransactionRequest("r@mail.com", new BigDecimal("5000.00"), "broke", "1234");
+        User receiver = new User();
+        receiver.setUserId(2L);
 
         when(userRepo.findById(1L)).thenReturn(Optional.of(sender));
-        when(userRepo.findByEmail(anyString())).thenReturn(Optional.of(new User()));
-        when(encoder.matches(anyString(), anyString())).thenReturn(true);
+        when(userRepo.findByEmail("r@mail.com")).thenReturn(Optional.of(receiver));
+        when(encoder.matches("1234", sender.getTransactionPinHash())).thenReturn(true);
         when(walletRepo.findById(1L)).thenReturn(Optional.of(senderWallet));
+        // Fixed: Mock receiver wallet existence
+        when(walletRepo.findById(2L)).thenReturn(Optional.of(new Wallet()));
+        when(transRepo.findBySenderOrReceiverOrderByTimestampDesc(any(), any())).thenReturn(new ArrayList<>());
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> walletService.sendMoney(1L, req));
         assertEquals("Insufficient balance!", ex.getMessage());
     }
 
-    // --- 4. GUARDRAIL CASE: DAILY LIMIT BREACH ---
     @Test
     void testDailyLimit_Exceeded_ShouldFail() {
-        // Requesting 50,001 (Limit is 50,000)
         TransactionRequest req = new TransactionRequest("r@mail.com", new BigDecimal("50001.00"), "OverLimit", "1234");
 
         when(userRepo.findById(1L)).thenReturn(Optional.of(sender));
+        // Fixed: Added findByEmail mock to pass the receiver check
+        when(userRepo.findByEmail("r@mail.com")).thenReturn(Optional.of(new User()));
         when(encoder.matches(anyString(), anyString())).thenReturn(true);
+        when(transRepo.findBySenderOrReceiverOrderByTimestampDesc(any(), any())).thenReturn(new ArrayList<>());
 
         RuntimeException ex = assertThrows(RuntimeException.class, () -> walletService.sendMoney(1L, req));
         assertTrue(ex.getMessage().contains("limit of ₹50,000 exceeded"));
     }
 
-    // --- 5. AUDIT CASE: REFERENCE FORMAT ---
     @Test
     void testTransactionReference_Format() {
         when(walletRepo.findById(1L)).thenReturn(Optional.of(senderWallet));
@@ -119,7 +126,4 @@ public class WalletServiceTest {
         assertNotNull(result.getTransactionRef());
         assertTrue(result.getTransactionRef().startsWith("TXN-"), "Ref should start with TXN-");
     }
-
-
-
 }

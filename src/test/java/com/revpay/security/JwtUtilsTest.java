@@ -14,6 +14,7 @@ class JwtUtilsTest {
     @BeforeEach
     void setUp() {
         jwtUtils = new JwtUtils();
+        // Secret must be at least 256 bits (32 characters) for HS256
         ReflectionTestUtils.setField(jwtUtils, "jwtSecret", "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970");
         ReflectionTestUtils.setField(jwtUtils, "jwtExpirationMs", 86400000);
     }
@@ -24,7 +25,7 @@ class JwtUtilsTest {
         assertNotNull(token);
 
         boolean isValid = jwtUtils.validateJwtToken(token);
-        assertTrue(isValid);
+        assertTrue(isValid, "Token should be valid when generated with the same secret");
     }
 
     @Test
@@ -37,9 +38,11 @@ class JwtUtilsTest {
 
     @Test
     void validateTokenFailure() {
-        String fakeToken = "eyJhbGciOiJIUzI1NiJ9.fakePayload.fakeSignature";
+        // A token that will fail signature check because it wasn't generated with our secret
+        String fakeToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmYWtlQG1haWwuY29tIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+
         boolean isValid = jwtUtils.validateJwtToken(fakeToken);
 
-        assertFalse(isValid);
+        assertFalse(isValid, "Validation should return false instead of throwing an exception");
     }
 }
