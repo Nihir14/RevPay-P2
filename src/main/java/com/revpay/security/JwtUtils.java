@@ -2,6 +2,7 @@ package com.revpay.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,8 +49,10 @@ public class JwtUtils {
         try {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);
             return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            slf4jLogger.error("Invalid JWT signature/token: {}", e.getMessage());
+        } catch (SignatureException e) {
+            slf4jLogger.error("Invalid JWT signature: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            slf4jLogger.error("Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
             slf4jLogger.error("JWT token is expired: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {

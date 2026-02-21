@@ -3,9 +3,10 @@ package com.revpay.controller;
 import com.revpay.model.dto.JwtResponse;
 import com.revpay.model.dto.LoginRequest;
 import com.revpay.model.dto.SignupRequest;
-import com.revpay.model.entity.Role;
 import com.revpay.model.entity.User;
+import com.revpay.model.entity.Wallet;
 import com.revpay.repository.UserRepository;
+import com.revpay.repository.WalletRepository;
 import com.revpay.security.JwtUtils;
 import com.revpay.security.UserDetailsImpl;
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,7 @@ import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
@@ -42,6 +42,9 @@ class AuthControllerTest {
 
     @Mock
     private JwtUtils jwtUtils;
+
+    @Mock
+    private WalletRepository walletRepository;
 
     @InjectMocks
     private AuthController authController;
@@ -86,13 +89,20 @@ class AuthControllerTest {
 
         when(userRepository.existsByEmail("new@revpay.com")).thenReturn(false);
         when(userRepository.existsByPhoneNumber("1234567890")).thenReturn(false);
-        when(encoder.encode("password")).thenReturn("encodedPassword");
-        when(encoder.encode("1234")).thenReturn("encodedPin");
+
+        User savedUser = new User();
+        savedUser.setUserId(1L);
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+
+        // We only use this one broad mock to prevent UnnecessaryStubbingException
+        when(encoder.encode(any())).thenReturn("encodedHash");
 
         ResponseEntity<?> response = authController.registerUser(signupRequest);
 
         assertEquals(200, response.getStatusCodeValue());
         assertEquals("User registered successfully!", response.getBody());
+
+        verify(walletRepository, times(1)).save(any(Wallet.class));
     }
 
     @Test

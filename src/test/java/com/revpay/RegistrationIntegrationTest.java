@@ -6,8 +6,8 @@ import com.revpay.model.entity.Wallet;
 import com.revpay.repository.UserRepository;
 import com.revpay.repository.WalletRepository;
 import com.revpay.service.AuthService;
-import org.junit.jupiter.api.Test; // JUnit 5 import
-import static org.junit.jupiter.api.Assertions.*; // Correct Assertions
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @SpringBootTest
-@Transactional // This rolls back the database after the test so it stays clean
+@Transactional
 public class RegistrationIntegrationTest {
 
     @Autowired
@@ -29,12 +29,17 @@ public class RegistrationIntegrationTest {
 
     @Test
     void testCompleteRegistrationFlow() {
+        // Use a timestamp to ensure unique email and phone for every test run
+        long timestamp = System.currentTimeMillis();
+        String uniqueEmail = "test" + timestamp + "@revpay.com";
+        String uniquePhone = String.valueOf(timestamp).substring(0, 10); // Ensures 10 digits
+
         // 1. Prepare Request Data
         RegistrationRequest req = new RegistrationRequest();
-        req.setEmail("test@revpay.com");
+        req.setEmail(uniqueEmail);
         req.setPassword("pass123");
         req.setFullName("Test User");
-        req.setPhoneNumber("9876543210");
+        req.setPhoneNumber(uniquePhone);
         req.setRole("PERSONAL");
         req.setTransactionPin("1122");
         req.setSecurityQuestion("Your City?");
@@ -44,7 +49,7 @@ public class RegistrationIntegrationTest {
         authService.registerUser(req);
 
         // 3. Verify User was saved
-        Optional<User> savedUser = userRepository.findByEmail("test@revpay.com");
+        Optional<User> savedUser = userRepository.findByEmail(uniqueEmail);
         assertTrue(savedUser.isPresent(), "User should be present in the database");
 
         // 4. Verify Wallet was initialized (Linked via User ID)

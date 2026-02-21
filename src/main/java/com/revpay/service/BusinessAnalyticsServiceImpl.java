@@ -6,6 +6,8 @@ import com.revpay.repository.TransactionAnalyticsRepository;
 import com.revpay.model.entity.Transaction;
 import com.revpay.model.entity.Transaction.TransactionStatus;
 import com.revpay.model.entity.Transaction.TransactionType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -14,8 +16,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class BusinessAnalyticsServiceImpl
-        implements BusinessAnalyticsService {
+public class BusinessAnalyticsServiceImpl implements BusinessAnalyticsService {
+
+    private static final Logger log =
+            LoggerFactory.getLogger(BusinessAnalyticsServiceImpl.class);
 
     private final TransactionAnalyticsRepository repository;
 
@@ -24,14 +28,21 @@ public class BusinessAnalyticsServiceImpl
         this.repository = repository;
     }
 
-    //  Transaction Summary
+
+    // Transaction Summary
+
     @Override
     public BusinessSummaryDTO getTransactionSummary(Long businessId) {
+
+        log.info("Started transaction summary calculation for businessId={}", businessId);
 
         List<TransactionType> receivedTypes = List.of(
                 TransactionType.SEND,
                 TransactionType.INVOICE_PAYMENT
         );
+
+        log.debug("Fetching completed transactions for businessId={} with types={}",
+                businessId, receivedTypes);
 
         List<Transaction> completed =
                 repository.findByReceiverUserIdAndStatusAndTypeIn(
@@ -40,13 +51,22 @@ public class BusinessAnalyticsServiceImpl
                         receivedTypes
                 );
 
+        log.debug("Fetched {} completed transactions for businessId={}",
+                completed.size(), businessId);
+
         BigDecimal totalReceived = completed.stream()
                 .map(Transaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal totalSent = BigDecimal.ZERO; // business send logic later
-
+        BigDecimal totalSent = BigDecimal.ZERO;   // extend later
         BigDecimal pendingAmount = BigDecimal.ZERO; // extend later
+
+        log.info(
+                "Transaction summary calculated for businessId={} | totalReceived={} | totalSent={} | pendingAmount={}",
+                businessId, totalReceived, totalSent, pendingAmount
+        );
+
+        log.info("Completed transaction summary for businessId={}", businessId);
 
         return new BusinessSummaryDTO(
                 totalReceived,
@@ -55,16 +75,31 @@ public class BusinessAnalyticsServiceImpl
         );
     }
 
-    //  Daily Revenue Report
+
+    // Daily Revenue Report
+
     @Override
     public List<RevenueReportDTO> getDailyRevenue(Long businessId) {
+
+        log.info("Started daily revenue report generation for businessId={}", businessId);
+
+        List<TransactionType> revenueTypes = List.of(
+                TransactionType.INVOICE_PAYMENT,
+                TransactionType.SEND
+        );
+
+        log.debug("Fetching revenue transactions for businessId={} with types={}",
+                businessId, revenueTypes);
 
         List<Transaction> transactions =
                 repository.findByReceiverUserIdAndStatusAndTypeIn(
                         businessId,
                         TransactionStatus.COMPLETED,
-                        List.of(TransactionType.INVOICE_PAYMENT, TransactionType.SEND)
+                        revenueTypes
                 );
+
+        log.debug("Fetched {} transactions for revenue calculation for businessId={}",
+                transactions.size(), businessId);
 
         Map<LocalDate, BigDecimal> grouped =
                 transactions.stream()
@@ -79,12 +114,25 @@ public class BusinessAnalyticsServiceImpl
                                 )
                         ));
 
-        return grouped.entrySet().stream()
-                .map(e -> new RevenueReportDTO(
-                        e.getKey().toString(),
-                        e.getValue()
-                ))
-                .sorted(Comparator.comparing(RevenueReportDTO::period))
-                .toList();
+        log.debug("Grouped revenue into {} date buckets for businessId={}",
+                grouped.size(), businessId);
+
+        List<RevenueReportDTO> report =
+                grouped.entrySet().stream()
+                        .map(entry -> new RevenueReportDTO(
+                                entry.getKey().toString(),
+                                entry.getValue()
+                        ))
+                        .sorted(Comparator.comparing(RevenueReportDTO::period))
+                        .toList();
+
+        log.info(
+                "Daily revenue report generated successfully for businessId={} with {} records",
+                businessId, report.size()
+        );
+
+        log.info("Completed daily revenue report generation for businessId={}", businessId);
+
+        return report;
     }
 }
